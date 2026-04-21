@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Advanced Guess Game</title>
+
+<style>
+body {
+    font-family: Arial;
+    text-align: center;
+    background: linear-gradient(to right, #74ebd5, #ACB6E5);
+}
+
+#game {
+    background: white;
+    padding: 20px;
+    margin: 60px auto;
+    width: 330px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+h2 {
+    color: #333;
+}
+
+select, input {
+    padding: 10px;
+    width: 80%;
+    margin: 10px;
+    border-radius: 6px;
+}
+
+button {
+    padding: 10px;
+    margin: 5px;
+    border: none;
+    border-radius: 6px;
+    color: white;
+    cursor: pointer;
+}
+
+#submitBtn { background: green; }
+#resetBtn { background: red; }
+
+#timer { color: blue; font-weight: bold; }
+#highScore { color: purple; font-weight: bold; }
+
+</style>
+
+</head>
+
+<body>
+
+<div id="game">
+
+<h2>🎯 Guess the Number</h2>
+
+<p id="instruction">Guess a number</p>
+
+<p>Select Difficulty:</p>
+<select id="level">
+    <option value="easy">Easy (1–50)</option>
+    <option value="medium" selected>Medium (1–100)</option>
+    <option value="hard">Hard (1–200)</option>
+</select>
+
+<p id="timer">Time: 0s</p>
+<p id="highScore">🏆 High Score: ₹0</p>
+
+<input type="number" id="guess" placeholder="Enter your guess">
+
+<br>
+
+<button id="submitBtn" onclick="checkGuess()">Submit</button>
+<button id="resetBtn" onclick="resetGame()">Reset</button>
+
+<p id="message"></p>
+<p id="prize"></p>
+
+</div>
+
+<script>
+
+let randomNum, prizeMoney, attempts;
+let timeLeft, timer;
+
+let highScore = localStorage.getItem("highScore") || 0;
+document.getElementById("highScore").innerHTML = "🏆 High Score: ₹" + highScore;
+
+function initGame() {
+
+    let level = document.getElementById("level").value;
+
+    if (level === "easy") {
+        randomNum = Math.floor(Math.random() * 50) + 1;
+        prizeMoney = 50;
+        timeLeft = 40;
+    }
+    else if (level === "medium") {
+        randomNum = Math.floor(Math.random() * 100) + 1;
+        prizeMoney = 100;
+        timeLeft = 30;
+    }
+    else {
+        randomNum = Math.floor(Math.random() * 200) + 1;
+        prizeMoney = 200;
+        timeLeft = 20;
+    }
+
+    attempts = 0;
+
+    let maxRange = (level === "easy") ? 50 : (level === "medium") ? 100 : 200;
+
+    document.getElementById("instruction").innerHTML =
+        "Guess a number between 1 and " + maxRange;
+
+    document.getElementById("message").innerHTML = "";
+    document.getElementById("prize").innerHTML = "Prize: ₹" + prizeMoney;
+    document.getElementById("guess").value = "";
+
+    startTimer();
+}
+
+
+function startTimer() {
+    clearInterval(timer);
+
+    timer = setInterval(() => {
+        timeLeft--;
+        document.getElementById("timer").innerHTML = "Time: " + timeLeft + "s";
+
+        if (timeLeft <= 0) {
+            clearInterval(timer);
+            document.getElementById("message").innerHTML =
+                "⏱ Time's up! Number was " + randomNum;
+        }
+    }, 1000);
+}
+function checkGuess() {
+
+    let userGuess = Number(document.getElementById("guess").value);
+    attempts++;
+
+    if (timeLeft <= 0 || prizeMoney <= 0) return;
+
+    if (userGuess === randomNum) {
+
+        clearInterval(timer);
+
+        document.getElementById("message").innerHTML =
+            "🎉 You won ₹" + prizeMoney;
+
+        // High score update
+        if (prizeMoney > highScore) {
+            highScore = prizeMoney;
+            localStorage.setItem("highScore", highScore);
+            document.getElementById("highScore").innerHTML =
+                "🏆 High Score: ₹" + highScore;
+        }
+
+    } else {
+
+        prizeMoney -= 10;
+
+        if (userGuess > randomNum) {
+            document.getElementById("message").innerHTML = "📉 Too High!";
+        } else {
+            document.getElementById("message").innerHTML = "📈 Too Low!";
+        }
+
+        document.getElementById("prize").innerHTML = "Prize: ₹" + prizeMoney;
+
+        if (prizeMoney <= 0) {
+            clearInterval(timer);
+            document.getElementById("message").innerHTML =
+                "❌ Game Over! Number was " + randomNum;
+        }
+    }
+}
+
+
+function resetGame() {
+    initGame();
+}
+
+initGame();
+
+</script>
+
+</body>
+</html>
